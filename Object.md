@@ -1,7 +1,5 @@
 > Object class based on jdk1.8 
 
-
-
 [TOC]
 
 ## Question & Answer
@@ -49,9 +47,27 @@ public boolean equals(Object obj) {
 - == 用来比较基本类型的值是否相等或者两个对象的引用是否相等
 - equals 用来比较两个对象是否相等
 
-- 重写的 equals 方法应该遵守 **自反性、对称性、传递性、一致性**
+##### Q3.2：为什么要重写 equals() ?
 
-##### Q3.2：如何重写 equals() ?
+- 因为默认equals在比较两个对象时，是看他们是否指向同一个地址的
+
+  ```java
+  // 若不重写，则p1和p2是两个不同的对象，则是不同的，但在我们的业务中，需要他们相同
+  person p1 = new person(1,"name");
+  person p2 = new person(1,"name");
+  ```
+
+##### Q3.3：如何重写 equals() ?
+
+自反性：x.equals(x) 必须返回 true
+
+对称性：如果x.equals(y)返回true，那么y.equals(x)也应该返回true
+
+传递性：如果x.equals(y)返回true，y.equals(z)返回true，那么x.equals(z)也应该返回true
+
+一致性：如果x和y引用的对象没有发生变化，那么反复调用x.equals(y)应该返回同样的结果
+
+非空性：对于任意非空引用x，x.equals(null)应该返回false
 
 
 
@@ -66,14 +82,41 @@ static {
 }
 ```
 
-- 用**native关键字**修饰的函数表明该方法的实现并不是在Java中去完成，而是由C/C++去完成，并被编译成了与操作平台相关文件（**.dll**），由Java去调用
+- 用**native关键字**修饰的函数表明该方法的实现并不是在Java中去完成，而是由C/C++去完成，并被编译成了与操作平台相关文件（**.dll**），由Java去调用。实际上java就是在不同的平台上调用不同的native方法实现对操作系统的访问的
 - **静态初始化块**中调用了registerNatives()方法，在类首次进行加载的时候执行
 - 使用private来修饰，表面私有的并不被外部调用
 - 无方法体
 
 
 
-#### Q5：
+#### Q5：public final native Class<?> getClass()
+
+```java
+Object i = new Integer(1);   // 注意返回的是 Integer
+System.out.println(i.getClass()); // Integer.class 返回的是一个类对象（Class 类的对象） 
+System.out.println(i.getClass().getName()); // 得到包内路径
+System.out.println(i.getClass().getSimpleName());
+
+// output
+class java.lang.Integer
+java.lang.Integer 
+Integer
+```
+
+返回此对象（Object）的 **运行时类**（没有多态的，是静态解析的，编译时可以确定类型信息）
+
+得到类对象后，可以获取这个类中的相关属性和方法
+
+
+
+#### Q6：public native int hashCode()
+
+- Object类的hashCode()在本地实现，JDK中许多包装类重写了hashCode方法
+
+##### Q6.1： 为什么不直接通过hashCode产生唯一索引？
+
+  - 很难有这种算法
+  - 生成的hashCode非常大，可能会超出Java所能表示的范围
 
 
 
@@ -114,47 +157,6 @@ static {
     ```
 
 
-
-
-
-
-
-
-
-**public final native Class<?>getClass()**
-
-- native 修饰的方法是由操作系统帮忙实现的
-- calss是类的一个属性，能获取该类编译时的类对象。没有多态的，是静态解析的，编译时可以确定类型信息。
-- getClass() 是一个类的方法，它获取该类的类对象。有多态能力，运行时可以返回子类的类型信息。
-- ` Class<?>` 这样也能编译通过 `Class<? extends String> c = "".getClass()`
-
-**public native inthashCode()**
-
-- 为避免hash冲突，也就是算法获得的元素要尽量均匀分布
-- JDK中许多包装类也重写了hashCode方法
-- 算法获得的元素应该尽量均匀分布
-- 为什么不直接通过hashCode产生唯一索引？
-  - 很难有这种算法
-  - 生成的hashCode非常大，可能会超出Java所能表示的范围
-
-- String 类的 hashCode
-
-  ```java
-  public int hashCode() {
-      int h = hash; // 默认值是0
-      if (h == 0 && value.length > 0) {
-          char val[] = value; // 字符串对应的char数组
-  
-          for (int i = 0; i < value.length; i++) {
-              h = 31 * h + val[i]; // val[0]*31^(n-1) + val[1]*31^(n-2) + ... + val[n-1]
-          }
-          hash = h;
-      }
-      return h;
-  }
-  ```
-
-- 对于需要大量并且快速的对比，如果都用equals()去实现显然效率太低，所以可以考虑先比较hashCode
 
 **toString()**
 
