@@ -112,6 +112,7 @@ Integer
 #### Q6：public native int hashCode()
 
 - Object类的hashCode()在本地实现，JDK中许多包装类重写了hashCode方法
+- hashcode() 返回的不是对象在内存中的地址，应该是做了一些处理之后的
 
 ##### Q6.1： 为什么不直接通过hashCode产生唯一索引？
 
@@ -120,50 +121,110 @@ Integer
 
 
 
+#### Q7：protected native Object clone()
+
+```java
+protected native Object clone() throws CloneNotSupportedException;
+```
+
+一个类在覆盖clone（）方法时，需修改成public访问修饰符，保证其他类都能够访问
+
+一个类想要覆盖clone（）方法，必须本身实现 `java.lang.Cloneable` 接口，否则会抛出 `CloneNotSupportedException `异常
+
+##### Q7.1：浅拷贝与深拷贝
+
+**浅拷贝**（shallow copy）：只是增加了一个指针指向已存在的内存地址
+
+<img src="pic\浅拷贝.png" alt="image-20210130174653973" style="zoom: 25%;" />
+
+- 只会将**对象的各个属性**进行复制，并不会进行递归复制
+- 如果属性是基本类型，拷贝的就是基本类型的值；如果属性是内存地址（引用类型），拷贝的就是内存地址
+
+```java
+try {
+    // 直接调用父类的clone()方法
+    return super.clone();
+} catch (CloneNotSupportedException e) {
+    return null;
+}
+```
+
+- 对象拷贝后没有生成新的对象，二者的对象地址是一样的；而浅拷贝的对象地址是不一样的。
+
+```java
+Student studentB = (Student) studentA.clone() // 浅拷贝
+Student studentB = studentA  // 对象拷贝
+```
+
+深拷贝（deep copy）：增加了一个指针并且申请了一个新的内存，使这个指针指向这个新的内存
+
+<img src="pic\深拷贝.png" alt="image-20210130174746468" style="zoom:25%;" />
+
+- 在拷贝引用类型成员变量时，为引用类型的数据成员另辟了一个独立的内存空间，实现真正内容上的拷贝，花销较大
+- 实现方法
+  - 在递归路线上的所有引用属性都实现 `supper.clone()`
+  - 序列化
+
+#### **Q8：public String toString()**
+
+```java
+public String toString() {
+        return getClass().getName() + "@" + Integer.toHexString(hashCode());
+}
+```
+
+
+
+#### Q9：protected void finalize()
+
+```java
+ protected void finalize() throws Throwable { }
+```
+
+- 当对象的内存不再被使用时，GC时才调用。一旦垃圾收集器准备好释放对象占用的存储空间，首先调用finalize()，而且只有在下一次垃圾收集过程中，才会真正回收对象的内存
+
+- `Runtime.getRuntime().runFinalization()`等方法建议GC去调用这个方法，但还是不能保证一定会被调用。 Java语言规范中不仅不保证终结方法会被及时地执行，而且根本不保证他们会被执行。当一个程序终止时，某些已经无法访问的对象上的终结方法却根本没有执行，这是完全有可能的，因此，**不应该依赖终结方法来更新重要的持久状态**。
+- 回收没有使用new关键字分配的内存，那么允许程序员根据前面特殊的分配方法去执行一个**收尾机制**。
+
+
+
+#### Q10：instanceof
+
+- 测试一个对象是否为一个类的实例
+
+- obj 必须为引用类型，不能是基本类型
+
+- obj 为 null    `null instanceof Object => false`
+
+- obj 为 class 类的直接或间接子类
+
+  ```java
+  public class Person {}
+  public class Man extends Person{}
+  
+  Person p1 = new Person();
+  Person p2 = new Man();
+  Man m1 = new Man();
+  System.out.println(p1 instanceof Man);//false Man是Person的子类
+  System.out.println(p2 instanceof Man);//true  因为这是引用
+  System.out.println(m1 instanceof Man);//true
+  ```
 
 
 
 
-- instanceof 
-
-  - 测试一个对象是否为一个类的实例
-
-  - obj 必须为引用类型，不能是基本类型
-
-  - obj 为 null    `null instanceof Object => false`
-
-  - obj 为 class 接口的实现类   
-
-    ```java
-    ArrayList arrayList = new ArrayList();
-    System.out.println(arrayList instanceof List);//true
-    // 反过来也是返回 true
-    List list = new ArrayList();
-    System.out.println(list instanceof ArrayList);//true
-    ```
-
-  - obj 为 class 类的直接或间接子类
-
-    ```java
-    public class Person {}
-    public class Man extends Person{}
-    
-    Person p1 = new Person();
-    Person p2 = new Man();
-    Man m1 = new Man();
-    System.out.println(p1 instanceof Man);//false Man是Person的子类
-    System.out.println(p2 instanceof Man);//true
-    System.out.println(m1 instanceof Man);//true
-    ```
 
 
 
-**toString()**
 
-- `getClass().getName() +"@"+ Integer.toHexString(hashCode())`
 
-**notify() notifyAll() wait()**
 
-**finalize()**
 
-**private static native void registerNatives()**
+TODO
+
+notify() notifyAll() wait()
+
+
+
+
+
