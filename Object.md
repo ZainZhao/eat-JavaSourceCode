@@ -69,7 +69,41 @@ public boolean equals(Object obj) {
 
 非空性：对于任意非空引用x，x.equals(null)应该返回false
 
+##### Q3.4：自定义类中完整的 equals() ?
 
+```java
+// Person 类
+public boolean euqals(Object otherObject) {
+    // 1 比较引用
+    if (this == otherObject) {
+        return true
+    }
+    
+    // 2
+    if (null == otherObject) {
+        return false;
+    }
+    
+    // 3.1 如果 equals 的语义在每个子类中都有所改变，就使用 getClass() 检测
+    if (getClass() != otherObject.getClass()) {
+        return false;
+    }
+    
+    // 3.2 如果所有子类都有统一的定义，就使用 instanceof 检测
+    if (!(otherObejct instanceof Person)) {
+        return false;
+    }
+    
+    // 4 将 otherObject 转换成对应的类型变量
+    Person other = (Person)otherObject;  // 因为这个方法是 Person 类的，所以转为 Person 对象
+    
+    // 5 最后，对对象的属性进行比较    
+    
+}
+
+```
+
+> 如果用自定义对象作为集合中的key，那么一定要重写 equals() 和 hashCode() 
 
 
 
@@ -106,6 +140,12 @@ Integer
 返回此对象（Object）的 **运行时类**（没有多态的，是静态解析的，编译时可以确定类型信息）
 
 得到类对象后，可以获取这个类中的相关属性和方法
+
+```java
+Class<? extend String> c = “”.getClass();
+```
+
+类型为T的变量getClass()的返回值类型为 `Class<? extend T>`，而非getClass()方法声明中的 `Class<?>`
 
 
 
@@ -156,14 +196,44 @@ Student studentB = (Student) studentA.clone() // 浅拷贝
 Student studentB = studentA  // 对象拷贝
 ```
 
-深拷贝（deep copy）：增加了一个指针并且申请了一个新的内存，使这个指针指向这个新的内存
+**深拷贝**（deep copy）：增加了一个指针并且申请了一个新的内存，使这个指针指向这个新的内存
 
 <img src="pic\深拷贝.png" alt="image-20210130174746468" style="zoom:25%;" />
 
 - 在拷贝引用类型成员变量时，为引用类型的数据成员另辟了一个独立的内存空间，实现真正内容上的拷贝，花销较大
+
 - 实现方法
   - 在递归路线上的所有引用属性都实现 `supper.clone()`
   - 序列化
+  
+  ```java
+  public Object deepClone() throws Exception {
+      // 序列化
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(bos);
+      oos.writeObject(this);
+      
+      // 反序列化
+      ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+      ObjectInputStream ois = new ObjectInputStream(bis);
+      
+      return ois.readObject();
+      
+  }
+  
+  ```
+  
+  
+
+##### Q7.2：基本数据类型 & 引用类型
+
+基本数据类型：char、boolean、byte、short、int、long、float、double
+
+引用数据类型：类、接口、数组、枚举
+
+
+
+
 
 #### **Q8：public String toString()**
 
