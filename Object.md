@@ -167,9 +167,9 @@ Class<? extend String> c = “”.getClass();
 protected native Object clone() throws CloneNotSupportedException;
 ```
 
-一个类在覆盖clone（）方法时，需修改成public访问修饰符，保证其他类都能够访问
+一个类在覆盖 clone() 方法时，需修改成public访问修饰符，保证其他类都能够访问
 
-一个类想要覆盖clone（）方法，必须本身实现 `java.lang.Cloneable` 接口，否则会抛出 `CloneNotSupportedException `异常
+一个类想要覆盖clone() 方法，必须本身实现 `java.lang.Cloneable` 接口，否则会抛出 `CloneNotSupportedException `异常
 
 ##### Q7.1：浅拷贝与深拷贝
 
@@ -220,7 +220,6 @@ Student studentB = studentA  // 对象拷贝
       return ois.readObject();
       
   }
-  
   ```
   
   
